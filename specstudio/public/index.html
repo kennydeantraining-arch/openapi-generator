@@ -219,8 +219,13 @@ async function analyze() {
   const spec = $('#spec').value.trim();
   if (!spec) return setStatus($('#specStatus'), 'Paste a spec first.', 'err');
   setStatus($('#specStatus'), 'Analyzing…');
-  const r = await post('/api/analyze', { spec });
-  const data = await r.json();
+  let r, data;
+  try {
+    r = await post('/api/analyze', { spec });
+    data = await r.json();
+  } catch (e) {
+    return setStatus($('#specStatus'), 'Network error: ' + e.message, 'err');
+  }
   if (!r.ok) { setStatus($('#specStatus'), data.error, 'err'); return; }
   analysis = data;
   setStatus($('#specStatus'), `Parsed ✓ ${data.operations.length} endpoints found`, 'ok');
@@ -350,8 +355,13 @@ async function init() {
     const spec = $('#spec').value.trim();
     if (!spec) return setStatus($('#specStatus'), 'Paste a spec first.', 'err');
     setStatus($('#specStatus'), 'Validating…');
-    const r = await post('/api/validate', { spec });
-    const data = await r.json();
+    let data;
+    try {
+      const r = await post('/api/validate', { spec });
+      data = await r.json();
+    } catch (e) {
+      return setStatus($('#specStatus'), 'Network error: ' + e.message, 'err');
+    }
     setStatus($('#specStatus'), data.valid ? 'Spec is valid ✓' : data.output, data.valid ? 'ok' : 'err');
   });
   $('#snipTabs').addEventListener('click', (e) => {

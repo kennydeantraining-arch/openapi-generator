@@ -120,6 +120,8 @@ app.post('/api/generate', async (req, res) => {
   }
   const { dir, file } = writeSpecToTemp(spec);
   const outDir = path.join(dir, 'out');
+  const cleanup = () => fs.rmSync(dir, { recursive: true, force: true });
+  let streamed = false;
   try {
     const r = await runJar([
       'generate', '-i', file, '-g', generator, '-o', outDir,
@@ -140,12 +142,12 @@ app.post('/api/generate', async (req, res) => {
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="${zipName}"`);
     res.setHeader('X-SpecStudio-Files', String(fileCount));
-    fs.createReadStream(zipPath).on('close', () => {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }).pipe(res);
+    streamed = true;
+    fs.createReadStream(zipPath).on('close', cleanup).pipe(res);
   } catch (e) {
-    fs.rmSync(dir, { recursive: true, force: true });
     res.status(500).json({ error: e.message });
+  } finally {
+    if (!streamed) cleanup();
   }
 });
 

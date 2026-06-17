@@ -13,6 +13,7 @@ SpecStudio is a small web app built on top of [openapi-generator](https://github
 
 - Node.js 18+
 - Java 11+ (used to run the generator)
+- `zip` (used to package generated SDKs for download)
 
 ## Quick start
 
