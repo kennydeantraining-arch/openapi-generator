@@ -235,6 +235,8 @@ async function analyze() {
   renderInsight();
 }
 
+const HTTP_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']);
+
 /** Render the analyzed API summary and wire up endpoint selection. */
 function renderInsight() {
   const a = analysis;
@@ -254,12 +256,16 @@ function renderInsight() {
       <div class="stat"><div class="n">${a.schemas.length}</div><div class="l">models</div></div>
       <div class="stat"><div class="n">${a.servers.length}</div><div class="l">servers</div></div>
     </div>
-    <div class="ops">${a.operations.map((op, i) => `
+    <div class="ops">${a.operations.map((op, i) => {
+      const method = String(op.method || '').toUpperCase();
+      const cls = HTTP_METHODS.has(method) ? method : 'OPTIONS';
+      return `
       <div class="op" data-i="${i}">
-        <span class="method m-${op.method}">${op.method}</span>
+        <span class="method m-${cls}">${esc(method)}</span>
         <span class="path mono">${esc(op.path)}</span>
         <span class="sum">${esc(op.summary)}</span>
-      </div>`).join('')}
+      </div>`;
+    }).join('')}
     </div>
     <p style="margin-top:8px;font-size:12px;color:var(--muted)">Click an endpoint for quickstart code →</p>`;
   document.querySelectorAll('.op').forEach(el => el.addEventListener('click', () => {
@@ -352,11 +358,16 @@ async function generate(genId, el) {
 
 /** Fetch the generator list, populate the SDK grid, and wire up all event handlers. */
 async function init() {
-  const gens = await (await fetch('/api/generators')).json();
-  $('#gens').innerHTML = gens.map(g =>
-    `<div class="gen" data-id="${g.id}"><div>${g.label}</div><div class="dl">↓ zip</div></div>`).join('');
-  document.querySelectorAll('.gen').forEach(el =>
-    el.addEventListener('click', () => generate(el.dataset.id, el)));
+  try {
+    const gens = await (await fetch('/api/generators')).json();
+    $('#gens').innerHTML = gens.map(g =>
+      `<div class="gen" data-id="${esc(g.id)}"><div>${esc(g.label)}</div><div class="dl">↓ zip</div></div>`).join('');
+    document.querySelectorAll('.gen').forEach(el =>
+      el.addEventListener('click', () => generate(el.dataset.id, el)));
+  } catch (e) {
+    $('#gens').innerHTML = '<div class="empty">Generator list unavailable</div>';
+    setStatus($('#genStatus'), 'Failed to load generators: ' + e.message, 'err');
+  }
 
   $('#analyzeBtn').addEventListener('click', analyze);
   $('#sampleBtn').addEventListener('click', () => { $('#spec').value = SAMPLE; analyze(); });
