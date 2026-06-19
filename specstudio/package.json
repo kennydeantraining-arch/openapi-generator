@@ -1,0 +1,16 @@
+{
+  "name": "specstudio",
+  "version": "1.0.0",
+  "description": "Paste an OpenAPI spec, instantly get client SDKs, quickstart code, and API insight.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "js-yaml": "^4.2.0"
+  }
+}

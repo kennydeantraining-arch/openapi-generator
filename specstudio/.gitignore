@@ -1,0 +1,3 @@
+node_modules/
+vendor/*.jar
+server.log
