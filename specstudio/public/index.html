@@ -205,16 +205,19 @@ const SAMPLE = JSON.stringify({
   }
 }, null, 2);
 
+/** Render a status message into an element, optionally styled 'ok' or 'err'. */
 function setStatus(el, msg, cls) {
   el.textContent = msg; el.className = 'status' + (cls ? ' ' + cls : '');
 }
 
+/** POST a JSON body to a URL and return the raw fetch Response. */
 async function post(url, body) {
   const r = await fetch(url, { method: 'POST',
     headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   return r;
 }
 
+/** Send the current spec to /api/analyze and render the insight panel. */
 async function analyze() {
   const spec = $('#spec').value.trim();
   if (!spec) return setStatus($('#specStatus'), 'Paste a spec first.', 'err');
@@ -232,6 +235,7 @@ async function analyze() {
   renderInsight();
 }
 
+/** Render the analyzed API summary and wire up endpoint selection. */
 function renderInsight() {
   const a = analysis;
   const auth = a.security.length
@@ -266,6 +270,7 @@ function renderInsight() {
   }));
 }
 
+/** Build a curl/JS/Python quickstart snippet for an operation in the given language. */
 function snippetFor(op, lang) {
   const base = (analysis.servers[0] || 'https://api.example.com').replace(/\/$/, '');
   const hasAuth = analysis.security.length > 0;
@@ -304,6 +309,7 @@ res.raise_for_status()
 print(res.json())`;
 }
 
+/** Show the quickstart panel with the snippet for the selected endpoint. */
 function renderSnippet() {
   if (!selectedOp) return;
   $('#snippetPanel').style.display = '';
@@ -311,10 +317,12 @@ function renderSnippet() {
   $('#snippet').textContent = snippetFor(selectedOp, snipLang);
 }
 
+/** Escape a value for safe insertion into HTML. */
 function esc(s) {
   return String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 }
 
+/** Request an SDK for the given generator and trigger a zip download in the browser. */
 async function generate(genId, el) {
   const spec = $('#spec').value.trim();
   if (!spec) return setStatus($('#genStatus'), 'Paste a spec first.', 'err');
@@ -342,6 +350,7 @@ async function generate(genId, el) {
   }
 }
 
+/** Fetch the generator list, populate the SDK grid, and wire up all event handlers. */
 async function init() {
   const gens = await (await fetch('/api/generators')).json();
   $('#gens').innerHTML = gens.map(g =>

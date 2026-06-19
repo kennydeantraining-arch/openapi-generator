@@ -29,6 +29,11 @@ const GENERATORS = [
   { id: 'swift5', label: 'Swift 5' },
 ];
 
+/**
+ * Parse a spec string as JSON, falling back to YAML.
+ * @param {string} text - Raw OpenAPI document.
+ * @returns {object} The parsed document.
+ */
 function parseSpec(text) {
   try {
     return JSON.parse(text);
@@ -37,6 +42,12 @@ function parseSpec(text) {
   }
 }
 
+/**
+ * Run the openapi-generator CLI jar and resolve with its result.
+ * @param {string[]} args - Arguments passed after `java -jar <jar>`.
+ * @param {object} [opts] - Extra options forwarded to execFile.
+ * @returns {Promise<{code: number, stdout: string, stderr: string}>}
+ */
 function runJar(args, opts) {
   return new Promise((resolve) => {
     execFile('java', ['-jar', JAR, ...args], { timeout: 120000, ...opts },
@@ -44,6 +55,11 @@ function runJar(args, opts) {
   });
 }
 
+/**
+ * Write a spec to a fresh temp directory, picking the extension by content.
+ * @param {string} specText - Raw OpenAPI document.
+ * @returns {{dir: string, file: string}} Temp directory and spec file path.
+ */
 function writeSpecToTemp(specText) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'specstudio-'));
   const isJson = specText.trimStart().startsWith('{');
